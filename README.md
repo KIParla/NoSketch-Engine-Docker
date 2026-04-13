@@ -1,5 +1,11 @@
 # NoSketch Engine Docker
 
+This repository is the KIParla fork of
+[ELTE-DH/NoSketch-Engine-Docker](https://github.com/ELTE-DH/NoSketch-Engine-Docker).
+It keeps the upstream runtime model, while adding KIParla-oriented defaults and
+workflow guidance for corpora stored in
+[KIParla-NoSketch-Data](https://github.com/KIParla/KIParla-NoSketch-Data).
+
 This is a [dockerised](https://www.docker.com/) version of [NoSketch Engine](https://nlp.fi.muni.cz/trac/noske),
  the open source version of [Sketch Engine](https://www.sketchengine.eu/) corpus manager and text analysis software
  developed by [Lexical Computing Limited](https://www.lexicalcomputing.com/).
@@ -23,6 +29,20 @@ See [Dockerfile](Dockerfile) for details.
     (runs a test CLI query on `susanne` corpus by default)
 5. `make run` – to launch the docker container
 6. Navigate to `http://localhost:10070/` to try the WebUI
+
+## KIParla Quick Start
+
+1. Clone this repository and `KIParla/KIParla-NoSketch-Data`
+2. Point `CORPORA_DIR` at the local `KIParla-NoSketch-Data` checkout
+3. Check which corpora are ready: `make check-corpora CORPORA_DIR=/path/to/KIParla-NoSketch-Data`
+4. Compile a single corpus, for example:
+   `make compile-kip CORPORA_DIR=/path/to/KIParla-NoSketch-Data`
+5. Run the web interface:
+   `make run CORPORA_DIR=/path/to/KIParla-NoSketch-Data PORT=10070`
+
+The current KIParla data repository is:
+
+- https://github.com/KIParla/KIParla-NoSketch-Data
 
 ## Features
 

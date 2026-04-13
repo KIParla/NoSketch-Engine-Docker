@@ -3,17 +3,34 @@ CMD?=corpquery susanne '[word="Mardi"][word="Gras"]'
 IMAGE_NAME?=eltedh/nosketch-engine:latest
 CONTAINER_NAME?=noske
 CORPORA_DIR?=$$(pwd)/corpora
-SERVER_NAME?=https://sketchengine.company.com/
-SERVER_ALIAS?=sketchengine.company.com
-CITATION_LINK?=https://github.com/elte-dh/NoSketch-Engine-Docker
+SERVER_NAME?=http://localhost:$(PORT)/
+SERVER_ALIAS?=localhost
+CITATION_LINK?=https://github.com/KIParla/NoSketch-Engine-Docker
 
 
-all: build compile run
+all: preflight
 .PHONY: all
 
 
+preflight:
+	@test -d "$(CORPORA_DIR)" || (echo "Missing CORPORA_DIR: $(CORPORA_DIR)" >&2; exit 1)
+	@test -d "$(CORPORA_DIR)/registry" || (echo "Missing registry dir in $(CORPORA_DIR)" >&2; exit 1)
+.PHONY: preflight
+
+
+check-corpora: preflight
+	@for corp in KIP KIPasti ParlaBO ParlaTO ParlaBZ KIParla; do \
+		if [ -f "$(CORPORA_DIR)/$$corp/vertical/source" ]; then \
+			echo "$$corp: ready"; \
+		else \
+			echo "$$corp: missing vertical/source"; \
+		fi; \
+	done
+.PHONY: check-corpora
+
+
 # Pull prebuilt $(IMAGE_NAME) docker image from Dockerhub
-pull:
+pull: preflight
 	docker pull $(IMAGE_NAME)
 .PHONY: pull
 
@@ -45,7 +62,7 @@ remove-cert:
 
 # Run $(CONTAINER_NAME) container from $(IMAGE_NAME) image, mount $(CORPORA_DIR), use host port $(PORT)
 #  and set various environment variables (Variables prefixed with $$ are shell variables to preserve newlines)
-run:
+run: preflight
 	@make -s stop
 	docker run -d --rm --name $(CONTAINER_NAME) -p$(PORT):80 --mount type=bind,src=$(CORPORA_DIR),dst=/corpora \
      -e SERVER_NAME="$(SERVER_NAME)" -e SERVER_ALIAS="$(SERVER_ALIAS)" -e CITATION_LINK="$(CITATION_LINK)" \
@@ -73,8 +90,8 @@ connect:
 
 # Execute commmand in CMD variable and set various environment variables
 # (Variables prefixed with $$ are shell variables to preserve newlines)
-execute:
-	docker run --rm -it --mount type=bind,src=$(CORPORA_DIR),dst=/corpora -e FORCE_RECOMPILE="$(FORCE_RECOMPILE)" \
+execute: preflight
+	docker run --rm --mount type=bind,src=$(CORPORA_DIR),dst=/corpora -e FORCE_RECOMPILE="$(FORCE_RECOMPILE)" \
      -e SERVER_NAME="$(SERVER_NAME)" -e SERVER_ALIAS="$(SERVER_ALIAS)" -e CITATION_LINK="$(CITATION_LINK)" \
      -e HTACCESS="$$HTACCESS" -e HTPASSWD="$$HTPASSWD" -e PRIVATE_KEY="$$PRIVATE_KEY" -e PUBLIC_KEY="$$PUBLIC_KEY" \
      $(IMAGE_NAME) $(CMD)
@@ -82,9 +99,39 @@ execute:
 
 
 # Compile all corpora
-compile:
+compile: preflight
 	@make -s execute IMAGE_NAME=$(IMAGE_NAME) FORCE_RECOMPILE=$(FORCE_RECOMPILE) CMD=compile.sh
 .PHONY: compile
+
+
+compile-kip:
+	@make -s execute CMD='compilecorp --no-ske --recompile-corpus /corpora/registry/KIP'
+.PHONY: compile-kip
+
+
+compile-kipasti:
+	@make -s execute CMD='compilecorp --no-ske --recompile-corpus /corpora/registry/KIPasti'
+.PHONY: compile-kipasti
+
+
+compile-parlabo:
+	@make -s execute CMD='compilecorp --no-ske --recompile-corpus /corpora/registry/ParlaBO'
+.PHONY: compile-parlabo
+
+
+compile-parlato:
+	@make -s execute CMD='compilecorp --no-ske --recompile-corpus /corpora/registry/ParlaTO'
+.PHONY: compile-parlato
+
+
+compile-parlabz:
+	@make -s execute CMD='compilecorp --no-ske --recompile-corpus /corpora/registry/ParlaBZ'
+.PHONY: compile-parlabz
+
+
+compile-kiparla:
+	@make -s execute CMD='compilecorp --no-ske --recompile-corpus /corpora/registry/KIParla'
+.PHONY: compile-kiparla
 
 
 # Create a strong password with htpasswd command inside the docker image
