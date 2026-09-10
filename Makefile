@@ -1,5 +1,5 @@
 PORT?=10070
-CMD?=corpquery susanne '[word="Mardi"][word="Gras"]'
+CMD?=corpinfo -s KIP
 IMAGE_NAME?=eltedh/nosketch-engine:latest
 CONTAINER_NAME?=noske
 CORPORA_DIR?=$$(pwd)/corpora

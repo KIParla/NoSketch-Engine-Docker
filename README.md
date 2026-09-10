@@ -20,17 +20,7 @@ This docker image is based on Debian 12 Bookworm and
  some additional hacks for convenient install and use.
 See [Dockerfile](Dockerfile) for details.
 
-## TL;DR
-
-1. `git clone --depth=1 https://github.com/ELTE-DH/NoSketch-Engine-Docker.git`
-2. `make pull` – to download the docker image
-3. `make compile` – to compile sample corpora
-4. `make execute` – to execute a Sketch Engine command (`compilecorp`, `corpquery`, etc.) in the docker container
-    (runs a test CLI query on `susanne` corpus by default)
-5. `make run` – to launch the docker container
-6. Navigate to `http://localhost:10070/` to try the WebUI
-
-## KIParla Quick Start
+## Quick start
 
 1. Clone this repository and `KIParla/KIParla-NoSketch-Data`
 2. Point `CORPORA_DIR` at the local `KIParla-NoSketch-Data` checkout
@@ -50,15 +40,12 @@ The current KIParla data repository is:
    and compile the corpus with one command)
 - CLI commands can be used directly (outside the docker image)
 - Works on any domain without changing configuration (without HTTPS and Shibboleth)
-- Two example corpora included: [`susanne`](corpora/susanne)
-   ([original NoSkE sample corpus](https://corpora.fi.muni.cz/noske/current/src/susanne-example-source.tar.bz2))
-   and [`emagyardemo`](corpora/emagyardemo)
+- KIParla corpora (`KIP`, `KIPasti`, `ParlaBO`, `ParlaTO`, `KIParla`) live in
+  [KIParla-NoSketch-Data](https://github.com/KIParla/KIParla-NoSketch-Data) and
+  are referenced at runtime via `CORPORA_DIR` — nothing is bundled in this repo
 - (optional) Shibboleth SP (with eduid.hu)
 - (optional) basic auth (updateable easily)
 - (optional) HTTPS with Let's Encrypt (automatic renewal with [traefik proxy](https://traefik.io/traefik/))
-
-[Further info](corpora/emagyardemo/vertical/README.md) on how to analyse a plain text corpus by
- [e-magyar](https://github.com/nytud/emtsv) and convert it to the right format suitable to fit in the system.
 
 Corpus configuration recipes to aid compilation of large corpora can be found [here](examples/README.md).
 
@@ -73,13 +60,11 @@ Corpus configuration recipes to aid compilation of large corpora can be found [h
 
 ### 2. Compile your corpus
 
-1. Put vert file(s) in: `corpora/CORPUS_NAME/vertical` directory\
-   (see examples in [`corpora/susanne/vertical`](corpora/susanne/vertical)
-   and [`corpora/emagyardemo/vertical`](corpora/emagyardemo/vertical) directories)
-2. Put config in: `corpora/registry/CORPUS_NAME` file\
-   (see examples in [`corpora/registry/susanne`](corpora/registry/susanne)
-   and [`corpora/registry/emagyardemo`](corpora/registry/emagyardemo))
-3. Compile all corpora listed in [`corpora/registry`](corpora/registry) directory using the docker image: `make compile`
+1. Put vert file(s) in: `$CORPORA_DIR/CORPUS_NAME/vertical/source`
+2. Put config in: `$CORPORA_DIR/registry/CORPUS_NAME`
+   (for KIParla these are generated — see
+   [KIParla-NoSketch-Data](https://github.com/KIParla/KIParla-NoSketch-Data))
+3. Compile all corpora listed in `$CORPORA_DIR/registry/` using the docker image: `make compile`
     - To compile _one_ corpus at a time (overwriting existing files), use the following command:
       `make execute CMD="compilecorp --no-ske --recompile-corpus CORPUS_REGISTRY_FILE"`
     - If you want to overwrite all existing indices automatically when running `make compile` set any non-empty value
@@ -101,10 +86,10 @@ Customise the environment variables in `secrets/env.sh` (see [`secrets/env.sh.te
 
 - `make execute`: runs NoSketch Engine CLI commands using the docker image. Specify the command to run in the `CMD` parameter.
   For example:
-  - `make execute CMD='corpinfo -s susanne'`\
-    gives info about the _susanne_ corpus
-  - `make execute CMD='corpquery emagyardemo "[lemma=\"és\"]"'`\
-    runs the specified query on the _emagyardemo_ corpus and gives 2 hits.\
+  - `make execute CMD='corpinfo -s KIP'`\
+    gives info about the _KIP_ corpus
+  - `make execute CMD='corpquery KIP "[word=\"allora\"]"'`\
+    runs the specified query on the _KIP_ corpus.\
     Mind the use of quotation marks: `\"` inside `"` inside `'`.
 - `make connect`: gives a shell to a running container
 
@@ -258,7 +243,7 @@ An example API call is as shown below:
 
 Request:
 
-`http://***:10070/bonito/run.cgi/wordlist?corpname=susanne&wlattr=word&wlpat=test.&wlsort=frq&wlmaxitems=2&format=json`
+`http://***:10070/bonito/run.cgi/wordlist?corpname=KIP&wlattr=word&wlpat=test.&wlsort=frq&wlmaxitems=2&format=json`
 
 Response:
 
@@ -286,7 +271,6 @@ The following files in this repository are from https://nlp.fi.muni.cz/trac/nosk
 - `noske_files/bonito-open-*.tar.gz` (GPLv2+)
 - `noske_files/crystal-open-*.tar.gz` (GPLv3)
 - `noske_files/gdex-*.tar.gz` (GPLv3)
-- Susanne sample corpus: `data/corpora/susanne/vertical` and `data/registry/susanne`
 
 The rest of the files are licensed under the Lesser GNU GPL version 3 or any later.
 

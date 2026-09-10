@@ -1,12 +1,6 @@
-# Private coropra
-corpora/*
-!corpora/susanne/
-!corpora/emagyardemo/
-!corpora/registry/susanne
-!corpora/registry/emagyardemo
-
-# Compiled corpora
-corpora/**/indexed/*
+# Corpora live in KIParla/KIParla-NoSketch-Data and are referenced at runtime
+# through CORPORA_DIR — nothing under corpora/ is tracked here.
+corpora/
 
 # Secrets specific to deployment (e.g. the private key should not be published)
 secrets/sp.for.eduid.service.hu-cert.crt
